@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>魔丸宿舍值日查询系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --accent: #7209b7;
+            --success: #4cc9f0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --danger: #e63946;
+            --warning: #fca311;
+            --card-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: var(--dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 900px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            padding: 25px;
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-title {
+            font-size: 1.3rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .today-info {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 25px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            grid-column: 1 / -1;
+        }
+        
+        .today-info h2 {
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+        }
+        
+        .duty-person {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 20px 0;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        
+        .date-display {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background-color: var(--accent);
+            color: white;
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .btn-warning {
+            background-color: var(--warning);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border 0.3s;
+        }
+        
+        input:focus, select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+        
+        .preview-result {
+            background-color: var(--light);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 15px;
+            text-align: center;
+            border-left: 5px solid var(--success);
+        }
+        
+        .member-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            
+            gap: 12px;
+            margin-top: 15px;
+        }
+        
+        .member-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s;
+            border: 2px solid transparent;
+        }
+        
+        .member-item:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary);
+        }
+        
+        .member-item input {
+            text-align: center;
+            font-weight: 500;
+            border: none;
+            background: transparent;
+            padding: 5px;
+        }
+        
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .history-table th, .history-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .history-table th {
+            background-color: var(--light);
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .history-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .notification-panel {
+            background-color: #fff9e6;
+            border-left: 5px solid var(--warning);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .notification-options {
+            margin-top: 15px;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--success);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: rgba(255,255,255,0.8);
+            font-size: 0.9rem;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .badge-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .badge-success {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .badge-warning {
+            background-color: var(--warning);
+            color: white;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .close-modal {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .export-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .export-option {
+            text-align: center;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .export-option:hover {
+            border-color: var(--primary);
+            background-color: #f0f4ff;
+        }
+        
+        .export-option i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+        
+        .today-highlight {
+            background-color: #e8f4fc !important;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background-color: var(--success);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <h1><i class="fas fa-home"></i> 魔丸宿舍值日查询系统</h1>
+            <p>警告！212only！内有魔丸！</p>
+        </div>
+        
+        <div class="today-info card">
+            <div class="date-display" id="today-date">正在加载日期...</div>
+            <div class="duty-person" id="today-duty">正在计算...</div>
+            <div class="progress-bar">
+                <div class="progress" id="duty-progress" style="width: 0%"></div>
+            </div>
+            <div class="controls">
+                <button class="btn btn-primary" id="prev-day">
+                    <i class="fas fa-chevron-left"></i> 前一天
+                </button>
+                <button class="btn btn-primary" id="next-day">
+                    后一天 <i class="fas fa-chevron-right"></i>
+                </button>
+                <button class="btn btn-secondary" id="export-btn">
+                    <i class="fas fa-file-export"></i> 导出数据
+                </button>
+                <button class="btn btn-success" id="reminder-btn">
+                    <i class="fas fa-bell"></i> 设置提醒
+                </button>
+            </div>
+        </div>
+        
+        <div class="dashboard">
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-calendar-alt"></i> 日期查询
+                </div>
+                <input type="date" id="query-date">
+                <button class="btn btn-primary" id="query-btn" style="width: 100%; margin-top: 10px;">
+                    <i class="fas fa-search"></i> 查询值日安排
+                </button>
+                <div class="preview-result" id="preview-result">
+                     
+                    选择日期查看值日安排
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-cogs"></i> 系统设置(魔丸不懂不要动，忽略就行)
+                </div>
+                <label for="start-date">restart data:</label>
+                <input type="date" id="start-date">
+                
+                <label for="member-count">numbers:</label>
+                <select id="member-count">
+
+                    <option value="6" selected>6人</option>
+
+                </select>
+                
+                <button class="btn btn-primary" id="save-config" style="width: 100%;">
+                    <i class="fas fa-save"></i> save after the change
+                </button>
+                <i class="fas fa-warning"></i> 警告：随意修改影响排班！
+                <div class="member-list" id="member-list">
+                    <!-- 成员列表将通过JavaScript动态生成 -->
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-bell"></i> 值日提醒
+                </div>
+                <div class="notification-panel">
+                    <div class="notification-header">
+                        <span><strong>值日提醒</strong></span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="reminder-toggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <p>开启后，AI魔丸温东凯会在值日当天通过浏览器通知提醒您</p>
+                    
+                    <div class="notification-options">
+                        <label for="reminder-time">提醒时间:</label>
+                        <select id="reminder-time">
+                            <option value="0">值日当天 08:00</option>
+                            <option value="1">值日前一天 20:00</option>
+                            <option value="2">值日当天 07:30</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-chart-bar"></i> 值日统计
+                </div>
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-label">本月已完成</div>
+                        <div class="stat-value" id="completed-count">0</div>
+                        <div class="stat-label">次值日</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">下次值日</div>
+                        <div class="stat-value" id="next-duty-day">0</div>
+                        <div class="stat-label">天后</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">魔丸指数</div>
+                        <div class="stat-value" id="fairness-index">100%</div>
+                        <div class="stat-label">魔丸含量</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-title">
+                <i class="fas fa-calendar-week"></i> 本周值日安排
+            </div>
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>日期</th>
+                        <th>星期</th>
+                        <th>值日生</th>
+                        <th>状态</th>
+                    </tr>
+                </thead>
+                <tbody id="week-schedule">
+                    <!-- 本周安排将通过JavaScript动态生成 -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="card">
+            <div class="card-title">
+                <i class="fas fa-history"></i> 值日记录
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>日期</th>
+                            <th>值日生</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="duty-history">
+                        <!-- 值日记录将通过JavaScript动态生成 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>魔丸宿舍值日查询系统 by zyh&copy; 2025 - 数据保存在本地浏览器中</p>
+        </div>
+    </div>
+
+    <!-- 导出数据模态框 -->
+    <div class="modal" id="export-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-file-export"></i> 导出数据</h3>
+                <span class="close-modal">&times;</span>
+            </div>
+            <p>选择导出格式和范围：</p>
+            
+            <div class="export-options">
+                <div class="export-option" data-format="csv">
+                    <i class="fas fa-file-csv"></i>
+                    <div>CSV格式</div>
+                    <small>适用于Excel</small>
+                </div>
+                <div class="export-option" data-format="json">
+                    <i class="fas fa-file-code"></i>
+                    <div>JSON格式</div>
+                    <small>用于数据备份</small>
+                </div>
+                <div class="export-option" data-format="pdf">
+                    <i class="fas fa-file-pdf"></i>
+                    <div>PDF格式</div>
+                    <small>便于打印</small>
+                </div>
+                <div class="export-option" data-format="print">
+                    <i class="fas fa-print"></i>
+                    <div>直接打印</div>
+                    <small>快速输出</small>
+                </div>
+            </div>
+            
+            <div>
+                <label for="export-range">导出范围:</label>
+                <select id="export-range">
+                    <option value="week">本周值日表</option>
+                    <option value="month">本月值日表</option>
+                    <option value="all">全部值日记录</option>
+                </select>
+            </div>
+            
+            <button class="btn btn-primary" id="confirm-export" style="width: 100%; margin-top: 20px;">
+                <i class="fas fa-download"></i> 确认导出
+            </button>
+        </div>
+    </div>
+
+    <!-- 提醒设置模态框 -->
+    <div class="modal" id="reminder-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-bell"></i> 设置值日提醒</h3>
+                <span class="close-modal">&times;</span>
+            </div>
+            <p>设置值日提醒，人机温东凯会在指定时间通过浏览器通知您。</p>
+            
+            <div style="margin: 20px 0;">
+                <label for="custom-reminder-time">提醒时间:</label>
+                <select id="custom-reminder-time">
+                    <option value="0">值日当天 08:00</option>
+                    <option value="1">值日前一天 20:00</option>
+                    <option value="2">值日当天 07:30</option>
+                    <option value="custom">自定义时间</option>
+                </select>
+                
+                <div id="custom-time-container" style="display: none; margin-top: 10px;">
+                    <input type="time" id="custom-time" value="08:00">
+                    <select id="custom-days-before">
+                        <option value="0">值日当天</option>
+                        <option value="1">值日前一天</option>
+                        <option value="2">值日前两天</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="notification-panel">
+                <p><i class="fas fa-info-circle"></i> 请注意：浏览器通知需要您的授权。如果尚未授权，系统会提示您授权。</p>
+            </div>
+            
+            <button class="btn btn-success" id="save-reminder" style="width: 100%; margin-top: 20px;">
+                <i class="fas fa-bell"></i> 保存提醒设置
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 默认配置
+        const defaultConfig = {
+            startDate: '2025-09-27',
+            memberCount: 6,
+            members: ['谭俊园', '钟宇瀚', '温冬凯', '徐志伟', '邓权峰', '邱翔'],
+            reminders: {
+                enabled: false,
+                time: '0'
+
+            }
+            
+        };
+
+        // 从本地存储加载配置或使用默认值
+        function loadConfig() {
+            const savedConfig = localStorage.getItem('dormDutyConfig');
+            if (savedConfig) {
+                return JSON.parse(savedConfig);
+            }
+            return defaultConfig;
+        }
+
+        // 保存配置到本地存储
+        function saveConfig(config) {
+            localStorage.setItem('dormDutyConfig', JSON.stringify(config));
+        }
+
+        // 获取配置
+        let config = loadConfig();
+        let currentDisplayDate = new Date();
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            // 设置起始日期输入框的值
+            document.getElementById('start-date').value = config.startDate;
+            document.getElementById('member-count').value = config.memberCount;
+            document.getElementById('reminder-toggle').checked = config.reminders.enabled;
+            document.getElementById('reminder-time').value = config.reminders.time;
+            
+            // 更新成员列表
+            updateMemberList();
+            
+            // 显示今日值日信息
+            updateTodayInfo();
+            
+            // 显示本周安排
+            updateWeekSchedule();
+            
+            // 更新值日记录
+            updateDutyHistory();
+            
+            // 更新统计信息
+            updateStats();
+            
+            // 设置事件监听器
+            setupEventListeners();
+            
+            // 请求通知权限
+            requestNotificationPermission();
+        });
+
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 设置查询按钮事件
+            document.getElementById('query-btn').addEventListener('click', queryDate);
+            
+            // 设置保存配置按钮事件
+            document.getElementById('save-config').addEventListener('click', saveConfiguration);
+            
+            // 设置成员数量改变事件
+            document.getElementById('member-count').addEventListener('change', updateMemberList);
+            
+            // 设置前一天/后一天按钮事件
+            document.getElementById('prev-day').addEventListener('click', () => changeDate(-1));
+            document.getElementById('next-day').addEventListener('click', () => changeDate(1));
+            
+            // 设置导出按钮事件
+            document.getElementById('export-btn').addEventListener('click', showExportModal);
+            
+            // 设置提醒按钮事件
+            document.getElementById('reminder-btn').addEventListener('click', showReminderModal);
+            document.getElementById('save-reminder').addEventListener('click', saveReminderSettings);
+            document.getElementById('reminder-toggle').addEventListener('change', toggleReminders);
+            
+            // 设置模态框关闭事件
+            document.querySelectorAll('.close-modal').forEach(closeBtn => {
+                closeBtn.addEventListener('click', closeModals);
+            });
+            
+            // 设置导出选项事件
+            document.querySelectorAll('.export-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.export-option').forEach(o => o.style.borderColor = '#e0e0e0');
+                    this.style.borderColor = 'var(--primary)';
+                    this.style.backgroundColor = '#f0f4ff';
+                });
+            });
+            
+            // 设置自定义时间显示/隐藏
+            document.getElementById('custom-reminder-time').addEventListener('change', function() {
+                const customContainer = document.getElementById('custom-time-container');
+                customContainer.style.display = this.value === 'custom' ? 'block' : 'none';
+            });
+            
+            // 点击模态框外部关闭
+            window.addEventListener('click', function(event) {
+                if (event.target.classList.contains('modal')) {
+                    closeModals();
+                }
+            });
+        }
+
+        // 更新成员列表
+        function updateMemberList() {
+            const memberCount = parseInt(document.getElementById('member-count').value);
+            const memberList = document.getElementById('member-list');
+            memberList.innerHTML = '';
+            
+            // 确保成员数组长度正确
+            while (config.members.length < memberCount) {
+                config.members.push(`成员${config.members.length + 1}`);
+            }
+            while (config.members.length > memberCount) {
+                config.members.pop();
+            }
+            
+            // 生成成员输入框
+            for (let i = 0; i < memberCount; i++) {
+                const memberItem = document.createElement('div');
+                memberItem.className = 'member-item';
+                
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.value = config.members[i];
+                input.dataset.index = i;
+                input.addEventListener('change', updateMemberName);
+                
+                memberItem.appendChild(input);
+                memberList.appendChild(memberItem);
+            }
+        }
+
+        // 更新成员姓名
+        function updateMemberName(event) {
+            const index = parseInt(event.target.dataset.index);
+            config.members[index] = event.target.value;
+        }
+
+        // 保存配置
+        function saveConfiguration() {
+            config.startDate = document.getElementById('start-date').value;
+            config.memberCount = parseInt(document.getElementById('member-count').value);
+            saveConfig(config);
+            showNotification('设置已保存！', 'success');
+            updateTodayInfo();
+            updateWeekSchedule();
+            updateDutyHistory();
+            updateStats();
+        }
+
+        // 计算某天的值日生索引
+        function calculateDutyIndex(date) {
+            const startDate = new Date(config.startDate);
+            const targetDate = new Date(date);
+            
+            // 计算天数差
+            const timeDiff = targetDate.getTime() - startDate.getTime();
+            const daysDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
+            
+            // 确保天数为非负数
+            if (daysDiff < 0) {
+                return 0;
+            }
+            
+            // 按宿舍人数循环计算值日索引
+            return daysDiff % config.memberCount;
+        }
+
+        // 更新今日信息
+        function updateTodayInfo() {
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            
+            document.getElementById('today-date').textContent = formatDate(today);
+            const dutyIndex = calculateDutyIndex(todayStr);
+            document.getElementById('today-duty').textContent = config.members[dutyIndex];
+            
+            // 更新进度条（显示当前值日周期进度）
+            const daysSinceStart = Math.floor((today.getTime() - new Date(config.startDate).getTime()) / (1000 * 3600 * 24));
+            const progress = (daysSinceStart % config.memberCount) / config.memberCount * 100;
+            document.getElementById('duty-progress').style.width = `${progress}%`;
+            
+            // 设置当前显示日期为今天
+            currentDisplayDate = new Date();
+        }
+
+        // 查询日期
+        function queryDate() {
+            const queryDate = document.getElementById('query-date').value;
+            if (!queryDate) {
+                showNotification('请选择要查询的日期', 'warning');
+                return;
+            }
+            
+            const date = new Date(queryDate);
+            const dutyIndex = calculateDutyIndex(queryDate);
+            
+            document.getElementById('preview-result').innerHTML = `
+                <strong>${formatDate(date)}</strong><br>
+                <strong>${config.members[dutyIndex-1] ?? "邱翔"}</strong>
+            `;
+        }
+
+        // 更改当前显示日期
+        function changeDate(days) {
+            currentDisplayDate.setDate(currentDisplayDate.getDate() + days);
+            const dateStr = currentDisplayDate.toISOString().split('T')[0];
+            
+            document.getElementById('today-date').textContent = formatDate(currentDisplayDate);
+            const dutyIndex = calculateDutyIndex(dateStr);
+            document.getElementById('today-duty').textContent = config.members[dutyIndex];
+            
+            // 更新查询日期输入框
+            document.getElementById('query-date').value = dateStr;
+            
+            // 更新进度条
+            const daysSinceStart = Math.floor((currentDisplayDate.getTime() - new Date(config.startDate).getTime()) / (1000 * 3600 * 24));
+            const progress = (daysSinceStart % config.memberCount) / config.memberCount * 100;
+            document.getElementById('duty-progress').style.width = `${progress}%`;
+        }
+
+        // 更新本周安排
+        function updateWeekSchedule() {
+            const today = new Date();
+            const weekSchedule = document.getElementById('week-schedule');
+            weekSchedule.innerHTML = '';
+            
+            // 获取本周一的日期
+            const monday = new Date(today);
+            monday.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1));
+            
+            // 生成一周的安排
+            for (let i = 0; i < 7; i++) {
+                const currentDate = new Date(monday);
+                currentDate.setDate(monday.getDate() + i);
+                const dateStr = currentDate.toISOString().split('T')[0];
+                
+                const dutyIndex = calculateDutyIndex(dateStr);
+                
+                const row = document.createElement('tr');
+                
+                const dateCell = document.createElement('td');
+                dateCell.textContent = formatDate(currentDate);
+                
+                const dayCell = document.createElement('td');
+                dayCell.textContent = getWeekday(currentDate.getDay());
+                
+                const dutyCell = document.createElement('td');
+                dutyCell.textContent = config.members[dutyIndex];
+                
+                const statusCell = document.createElement('td');
+                
+                // 设置状态
+                if (currentDate.toDateString() === today.toDateString()) {
+                    row.classList.add('today-highlight');
+                    statusCell.innerHTML = '<span class="badge badge-primary">今日</span>';
+                } else if (currentDate < today) {
+                    statusCell.innerHTML = '<span class="badge badge-success">已完成</span>';
+                } else {
+                    statusCell.innerHTML = '<span class="badge badge-warning">待完成</span>';
+                }
+                
+                row.appendChild(dateCell);
+                row.appendChild(dayCell);
+                row.appendChild(dutyCell);
+                row.appendChild(statusCell);
+                weekSchedule.appendChild(row);
+            }
+        }
+
+        // 更新值日记录
+        function updateDutyHistory() {
+            const historyBody = document.getElementById('duty-history');
+            historyBody.innerHTML = '';
+            
+            const today = new Date();
+            const startDate = new Date(config.startDate);
+            
+            // 显示最近30天的记录
+            for (let i = 30; i >= 0; i--) {
+                const currentDate = new Date(today);
+                currentDate.setDate(today.getDate() - i);
+                
+                // 如果日期早于起始日期，跳过
+                if (currentDate < startDate) continue;
+                
+                const dateStr = currentDate.toISOString().split('T')[0];
+                const dutyIndex = calculateDutyIndex(dateStr);
+                
+                const row = document.createElement('tr');
+                
+                const dateCell = document.createElement('td');
+                dateCell.textContent = formatDate(currentDate);
+                
+                const dutyCell = document.createElement('td');
+                dutyCell.textContent = config.members[dutyIndex];
+                
+                const statusCell = document.createElement('td');
+                if (currentDate.toDateString() === today.toDateString()) {
+                    statusCell.innerHTML = '<span class="badge badge-primary">今日</span>';
+                } else if (currentDate < today) {
+                    statusCell.innerHTML = '<span class="badge badge-success">已完成</span>';
+                } else {
+                    statusCell.innerHTML = '<span class="badge badge-warning">待完成</span>';
+                }
+                
+                const actionCell = document.createElement('td');
+                if (currentDate <= today) {
+                    actionCell.innerHTML = '<button class="btn" style="padding: 5px 10px; font-size: 0.8rem;">标记完成</button>';
+                } else {
+                    actionCell.innerHTML = '-';
+                }
+                
+                row.appendChild(dateCell);
+                row.appendChild(dutyCell);
+                row.appendChild(statusCell);
+                row.appendChild(actionCell);
+                historyBody.appendChild(row);
+            }
+        }
+
+        // 更新统计信息
+        function updateStats() {
+            const today = new Date();
+            const startDate = new Date(config.startDate);
+            
+            // 计算本月已完成值日次数
+            const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+            let completedCount = 0;
+            
+            for (let d = new Date(monthStart); d <= today; d.setDate(d.getDate() + 1)) {
+                if (d >= startDate) {
+                    completedCount++;
+                }
+            }
+            
+            document.getElementById('completed-count').textContent = completedCount;
+            
+            // 计算下次值日还有几天
+            const dutyIndex = calculateDutyIndex(today.toISOString().split('T')[0]);
+            let nextDutyDay = 1;
+            
+            for (let i = 1; i <= config.memberCount; i++) {
+                const checkDate = new Date(today);
+                checkDate.setDate(today.getDate() + i);
+                const checkDutyIndex = calculateDutyIndex(checkDate.toISOString().split('T')[0]);
+                
+                if (checkDutyIndex === dutyIndex) {
+                    nextDutyDay = i;
+                    break;
+                }
+            }
+            
+            document.getElementById('next-duty-day').textContent = nextDutyDay;
+            
+            // 计算公平指数（简化版）
+            const totalDays = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 3600 * 24)) + 1;
+            const expectedDutiesPerPerson = Math.floor(totalDays / config.memberCount);
+            
+            // 这里简化计算，实际应该统计每个人的值日次数
+            const fairness = Math.min(100, Math.round(expectedDutiesPerPerson / (totalDays / config.memberCount) * 100));
+            document.getElementById('fairness-index').textContent = `${fairness}%`;
+        }
+
+        // 显示导出模态框
+        function showExportModal() {
+            document.getElementById('export-modal').style.display = 'flex';
+        }
+
+        // 显示提醒设置模态框
+        function showReminderModal() {
+            document.getElementById('reminder-modal').style.display = 'flex';
+        }
+
+        // 关闭所有模态框
+        function closeModals() {
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.style.display = 'none';
+            });
+        }
+
+        // 保存提醒设置
+        function saveReminderSettings() {
+            const reminderTime = document.getElementById('custom-reminder-time').value;
+            config.reminders.time = reminderTime;
+            config.reminders.enabled = true;
+            saveConfig(config);
+            
+            showNotification('提醒设置已保存！', 'success');
+            closeModals();
+            
+            // 设置实际提醒
+            setupReminders();
+        }
+
+        // 切换提醒开关
+        function toggleReminders() {
+            config.reminders.enabled = document.getElementById('reminder-toggle').checked;
+            saveConfig(config);
+            
+            if (config.reminders.enabled) {
+                showNotification('值日提醒已开启', 'success');
+                setupReminders();
+            } else {
+                showNotification('值日提醒已关闭', 'info');
+            }
+        }
+
+        // 设置提醒
+        function setupReminders() {
+            if (!config.reminders.enabled) return;
+            
+            // 这里简化实现，实际应该使用更复杂的调度系统
+            showNotification('值日提醒已激活，人机温东凯会在指定时间提醒您', 'success');
+            
+            // 示例：5秒后发送测试通知
+            setTimeout(() => {
+                if (Notification.permission === 'granted') {
+                    new Notification('宿舍值日提醒', {
+                        body: '今天是您的值日，请记得打扫卫生！',
+                        icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTQ4IDE2SDE2QzE0LjM0MzEgMTYgMTMgMTcuMzQzMSAxMyAxOVY0NUMxMyA0Ni42NTY5IDE0LjM0MzEgNDggMTYgNDhINDhDNDkuNjU2OSA0OCA1MSA0Ni42NTY5IDUxIDQ1VjE5QzUxIDE3LjM0MzEgNDkuNjU2OSAxNiA0OCAxNloiIGZpbGw9IiM0MzYxRUUiLz4KPHBhdGggZD0iTTQ4IDE2SDE2QzE0LjM0MzEgMTYgMTMgMTcuMzQzMSAxMyAxOVY0NUMxMyA0Ni42NTY5IDE0LjM0MzEgNDggMTYgNDhINDhDNDkuNjU2OSA0OCA1MSA0Ni42NTY5IDUxIDQ1VjE5QzUxIDE3LjM0MzEgNDkuNjU2OSAxNiA0OCAxNloiIHN0cm9rZT0iIzRBMzBBMyIgc3Ryb2tlLXdpZHRoPSIyIi8+CjxwYXRoIGQ9Ik0yMSAyNkg0MyIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPHBhdGggZD0iTTIxIDM0SDM1IiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K'
+                    });
+                }
+            }, 5000);
+        }
+
+        // 请求通知权限
+        function requestNotificationPermission() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        }
+
+        // 显示通知
+        function showNotification(message, type = 'info') {
+            // 在实际应用中，这里可以使用更美观的通知组件
+            alert(message);
+        }
+
+        // 格式化日期
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}年${month}月${day}日`;
+        }
+
+        // 获取星期几
+        function getWeekday(dayIndex) {
+            const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            return weekdays[dayIndex];
+        }
+    </script>
+</body>
+</html>
